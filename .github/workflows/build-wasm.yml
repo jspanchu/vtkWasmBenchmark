@@ -1,0 +1,55 @@
+name: Deploy WebAssembly binary.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Allows manual triggers from actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    container: 
+      image: jspanchu/vtk-wasm-target:latest
+      options: -v ${{ github.workspace }}:/project/src
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Configure
+      run: |
+        emcmake cmake -GNinja -S /project/src -B /project/build -DCMAKE_BUILD_TYPE=Release -DDEBUGINFO=NONE -DVTK_DIR=$VTK_DIR
+    - name: Build
+      run:
+        cmake --build /project/build
+    - name: Prepare artifacts
+      run: |
+        cd /project/build
+        mkdir /web_content
+        mv CompositePolyDataMapper.js /web_content/
+        mv CompositePolyDataMapper.wasm /web_content/
+        mv index.html /web_content/
+    - name: Setup Pages
+      uses: actions/configure-pages@v3
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: '/web_content/'
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v1
