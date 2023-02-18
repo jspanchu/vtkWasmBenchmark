@@ -41,22 +41,8 @@
 #include <vtkSphereSource.h>
 #include <vtkUnsignedCharArray.h>
 
-#ifdef __EMSCRIPTEN__
-#include "emscripten.h"
-#include <emscripten/html5.h>
-#endif
-
 namespace
 {
-
-#ifdef __EMSCRIPTEN__
-EM_BOOL resizeCallback(int eventType, const EmscriptenUiEvent* e, void* userData)
-{
-  auto interactor = reinterpret_cast<vtkRenderWindowInteractor*>(userData);
-  interactor->UpdateSize(e->windowInnerWidth, e->windowInnerHeight);
-  return 0;
-}
-#endif
 
 constexpr float SELECTED_COMPOSITE_OPACITY = 0.5;
 constexpr float SELECTED_BLOCK_OPACITY = 1.0;
@@ -244,11 +230,6 @@ int main(int argc, char* argv[])
   iren->SetInteractorStyle(style);
   win->SetSize(1920, 1080);
   win->Render();
-
-#ifdef __EMSCRIPTEN__
-  emscripten_set_resize_callback(
-    EMSCRIPTEN_EVENT_TARGET_WINDOW, reinterpret_cast<void*>(iren.Get()), 1, ::resizeCallback);
-#endif
   iren->Start();
   return 0;
 }
