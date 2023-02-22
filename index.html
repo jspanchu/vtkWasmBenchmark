@@ -26,25 +26,41 @@
       printErr: (text) => { console.log('stderr: ' + text); },
     };
 
+    // -----------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------
     // copied from vtk.js/Rendering/Misc/FullScreenRenderWindow.js
     function applyStyle(el, style) {
       Object.keys(style).forEach((key) => {
         el.style[key] = style[key];
       });
     }
-    // Use the export name to instantiate the app
-    var app = null;
-    // -----------------------------------------------------------
-    // UI control handling
-    // -----------------------------------------------------------
-    // copied from vtk.js/Rendering/Misc/FullScreenRenderWindow.js
+    // Converts the HTML color picker value into usable RGB
+    function hexToRGB(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result
+        ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+        : null;
+    }
 
     // define representation default settings here.
     let lineWidth = 1;
     let pointSize = 1;
+    let pickEnabled = false;
+    let layer0Visibility = true; // cones
+    let layer1Visibility = true; // spheres
+    let layer2Visibility = true; // cylinders
     let nx = 8;
     let ny = 8;
 
+    // -----------------------------------------------------------
+    // UI control handling
+    // -----------------------------------------------------------
+    // copied from vtk.js/Rendering/Misc/FullScreenRenderWindow.js
     const STYLE_CONTROL_PANEL = {
       position: 'absolute',
       left: '25px',
@@ -85,6 +101,10 @@
       <input class='lw' type='range' min='1' max='20' value='${lineWidth}' oninput='this.nextElementSibling.value = this.value'>
       <output>${lineWidth}</output>
     </td>
+    <td>
+      <label>Color: </label>
+      <input class='edgeColor' type='color', value='#FFFFFF'/>
+    </td>
   </tr>
   <tr id='ps_row' style='display: none;'>
     <td>Point size (Points)</td>
@@ -96,7 +116,25 @@
   <tr>
     <td>Pick blocks</td>
     <td>
-      <input type='checkbox' class='pickBlocks'>
+      <input type='checkbox' class='pickBlocks checked='${pickEnabled}'>
+    </td>
+  </tr>
+  <tr>
+    <td>Layer 0 (Cones)</td>
+    <td>
+      <input type='checkbox' class='layer0Visibility' checked='${layer0Visibility}'>
+    </td>
+  </tr>
+  <tr>
+    <td>Layer 1 (Spheres)</td>
+    <td>
+      <input type='checkbox' class='layer1Visibility' checked='${layer1Visibility}'>
+    </td>
+  </tr>
+  <tr>
+    <td>Layer 2 (Cylinders)</td>
+    <td>
+      <input type='checkbox' class='layer2Visibility' checked='${layer2Visibility}'>
     </td>
   </tr>
   <tr>
@@ -120,6 +158,8 @@
     controlContainer.innerHTML = controller;
     controlContainer.style.display = 'block';
 
+    // Use the export name to instantiate the app
+    var app = null;
     document
       .querySelector('.representations')
       .addEventListener('change', (e) => {
@@ -134,6 +174,12 @@
         app.setLineWidth(lineWidth);
       });
     document
+      .querySelector('.edgeColor').addEventListener('input', (e) => {
+        const color = hexToRGB(e.target.value);
+        app.setEdgeColor(color.r / 255.0, color.g / 255.0, color.b / 255.0);
+      });
+
+    document
       .querySelector('.ps')
       .addEventListener('input', (e) => {
         pointSize = Number(e.target.value);
@@ -142,8 +188,26 @@
     document
       .querySelector('.pickBlocks')
       .addEventListener('change', () => {
-        const pickEnabled = document.querySelector('.pickBlocks').checked;
+        pickEnabled = document.querySelector('.pickBlocks').checked;
         app.setPicking(pickEnabled);
+      });
+    document
+      .querySelector('.layer0Visibility')
+      .addEventListener('change', () => {
+        layer0Visibility = document.querySelector('.layer0Visibility').checked;
+        app.setLayerVisibility(0, layer0Visibility);
+      });
+    document
+      .querySelector('.layer1Visibility')
+      .addEventListener('change', () => {
+        layer1Visibility = document.querySelector('.layer1Visibility').checked;
+        app.setLayerVisibility(1, layer1Visibility);
+      });
+    document
+      .querySelector('.layer2Visibility')
+      .addEventListener('change', () => {
+        layer2Visibility = document.querySelector('.layer2Visibility').checked;
+        app.setLayerVisibility(2, layer2Visibility);
       });
     document
       .querySelector('.nx')
@@ -181,10 +245,12 @@
     }
 
     function updateRepresentation() {
+      const color = hexToRGB(document.querySelector('.edgeColor').value);
       const newLineWidth = Number(document.querySelector('.lw').value);
       const pickEnabled = document.querySelector('.pickBlocks').checked;
       const newPointSize = Number(document.querySelector('.ps').value);
       const newRepValue = Number(document.querySelector('.representations').value);
+      app.setEdgeColor(color.r / 255.0, color.g / 255.0, color.b / 255.0);
       app.setLineWidth(newLineWidth);
       app.setPicking(pickEnabled);
       app.setPointSize(newPointSize);

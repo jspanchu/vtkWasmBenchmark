@@ -116,6 +116,13 @@ private:
 
 vtkStandardNewMacro(HoverPickStyle);
 
+constexpr int CONE_LAYER_ID = 0;
+constexpr int SPHERE_LAYER_ID = 1;
+constexpr int CYLINDER_LAYER_ID = 2;
+
+std::map<int, std::vector<unsigned int>>
+    blockIdsPerLayer; // <layerID, [blockId,...]>
+vtkCompositeDataDisplayAttributes *cdsa = nullptr;
 vtkRenderWindowInteractor *iren = nullptr;
 vtkPartitionedDataSetCollection *pdset = nullptr;
 HoverPickStyle *pickStyle = nullptr;
@@ -165,6 +172,7 @@ static int createDatasets(int nx, int ny) {
         coneColors->FillTypedComponent(comp, coneColor[comp]);
       }
       cone->GetCellData()->SetScalars(coneColors);
+      blockIdsPerLayer[CONE_LAYER_ID].emplace_back(partitionIdx);
       pdset->SetPartition(partitionIdx++, 0, cone);
       z += spacings[2];
 
@@ -182,7 +190,8 @@ static int createDatasets(int nx, int ny) {
         sphereColors->FillTypedComponent(comp, sphereColor[comp]);
       }
       sphere->GetCellData()->SetScalars(sphereColors);
-      pdset->SetPartition(partitionIdx++, 1, sphere);
+      blockIdsPerLayer[SPHERE_LAYER_ID].emplace_back(partitionIdx);
+      pdset->SetPartition(partitionIdx++, 0, sphere);
       z += spacings[2];
 
       cylinderSource->SetCenter(x, y, z);
@@ -199,21 +208,37 @@ static int createDatasets(int nx, int ny) {
         cylinderColors->FillTypedComponent(comp, cylinderColor[comp]);
       }
       cylinder->GetCellData()->SetScalars(cylinderColors);
-      pdset->SetPartition(partitionIdx++, 1, cylinder);
-      pdset->SetPartition(partitionIdx++, 2, cylinder);
+      blockIdsPerLayer[CYLINDER_LAYER_ID].emplace_back(partitionIdx);
+      pdset->SetPartition(partitionIdx++, 0, cylinder);
     }
   }
   std::cout << __func__ << '(' << nx << ',' << ny << ')' << std::endl;
 
   vtkSmartPointer<vtkCompositePolyDataMapper2> mapper =
       vtkSmartPointer<vtkCompositePolyDataMapper2>::New();
-  vtkNew<vtkCompositeDataDisplayAttributes> cdsa;
-  mapper->SetCompositeDataDisplayAttributes(cdsa.GetPointer());
+  mapper->SetCompositeDataDisplayAttributes(cdsa);
   mapper->SetScalarModeToUseCellData();
   mapper->SetInputDataObject(pdset);
   actor->SetMapper(mapper);
-  actor->GetProperty()->SetEdgeColor(0.8, 0.8, 0.8);
   return 1;
+}
+
+static void setEdgeColor(float r, float g, float b) {
+  actor->GetProperty()->SetEdgeColor(r, g, b);
+}
+
+static void setLayerVisibility(int layer, bool visible) {
+  if (layer < CONE_LAYER_ID || layer > CYLINDER_LAYER_ID) {
+    std::cerr << "Invalid layer " << layer << std::endl;
+    return;
+  }
+  cdsa->RemoveBlockVisibilities();
+  for (auto &id : blockIdsPerLayer[layer]) {
+    std::cout << id << '\n';
+    cdsa->SetBlockVisibility(pdset->GetPartition(id, 0), visible);
+  }
+  std::cout << __func__ << "(" << layer << ',' << visible << ")" << std::endl;
+  iren->GetRenderWindow()->Render();
 }
 
 static void setLineWidth(float value) {
@@ -290,6 +315,7 @@ static int run() {
   if (pdset != nullptr) {
     pdset->Delete();
   }
+  cdsa->Delete();
   actor->Delete();
   pickStyle->Delete();
   switchStyle->Delete();
@@ -298,6 +324,7 @@ static int run() {
 }
 
 static void initialize() {
+  cdsa = vtkCompositeDataDisplayAttributes::New();
   iren = vtkRenderWindowInteractor::New();
   pickStyle = ::HoverPickStyle::New();
   switchStyle = vtkInteractorStyleSwitch::New();
@@ -329,6 +356,7 @@ int main(int argc, char *argv[]) {
   setPicking(enable_pick);
   setPointSize(1);
   setRepresentation(3);
+  setEdgeColor(0.8, 0.8, 0.8);
   return run();
 }
 #else
@@ -337,6 +365,8 @@ EMSCRIPTEN_BINDINGS(module) {
   emscripten::function("initialize", &initialize);
   emscripten::function("run", &run);
   emscripten::function("createDatasets", &createDatasets);
+  emscripten::function("setEdgeColor", &setEdgeColor);
+  emscripten::function("setLayerVisibility", &setLayerVisibility);
   emscripten::function("setLineWidth", &setLineWidth);
   emscripten::function("setPicking", &setPicking);
   emscripten::function("setPointSize", &setPointSize);
