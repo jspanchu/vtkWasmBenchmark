@@ -201,6 +201,10 @@
       app.initialize();
       updateDatasets();
       updateRepresentation();
+      // sends a resize event so that the render window fills up browser tab dimensions.
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 0);
       app.run();
     })
   </script>
