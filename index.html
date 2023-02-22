@@ -1,33 +1,183 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8"/>
-  </head>
-  <body>
-    <canvas id="canvas" style="position: absolute; left: 0; top: 0;"></canvas>
-    <script type="text/javascript" src="CompositePolyDataMapper.js"></script>
-    <script type='text/javascript'>
-      var Module = {
-        canvas: (function() {
-          var canvas = document.getElementById('canvas');
-          canvas.addEventListener(
-            "webglcontextlost",
-            function(e) {
-              console.error('WebGL context lost. You will need to reload the page.');
-              e.preventDefault();
-            },
-            false
-          );
-          return canvas;
-        })(),
-        onRuntimeInitialized:  function() {
-          console.log('initialized');
-        },
-      };
 
-      // Use the export name to instantiate the app
-      var app = vtkCPDMApp(Module);
+<head>
+  <meta charset="utf-8" />
+</head>
+
+<body>
+  <canvas id="canvas" style="position: absolute; left: 0; top: 0;"></canvas>
+  <script type="text/javascript" src="CompositePolyDataMapper.js"></script>
+  <script type='module'>
+    var Module = {
+      canvas: (function () {
+        var canvas = document.getElementById('canvas');
+        canvas.addEventListener(
+          "webglcontextlost",
+          function (e) {
+            console.error('WebGL context lost. You will need to reload the page.');
+            e.preventDefault();
+          },
+          false
+        );
+        return canvas;
+      })(),
+      print: (text) => { console.log('stdout: ' + text); },
+      printErr: (text) => { console.log('stderr: ' + text); },
+    };
+
+    // copied from vtk.js/Rendering/Misc/FullScreenRenderWindow.js
+    function applyStyle(el, style) {
+      Object.keys(style).forEach((key) => {
+        el.style[key] = style[key];
+      });
+    }
+    // Use the export name to instantiate the app
+    var app = null;
+    // -----------------------------------------------------------
+    // UI control handling
+    // -----------------------------------------------------------
+    // copied from vtk.js/Rendering/Misc/FullScreenRenderWindow.js
+
+    const STYLE_CONTROL_PANEL = {
+      position: 'absolute',
+      left: '25px',
+      top: '25px',
+      backgroundColor: 'white',
+      borderRadius: '5px',
+      listStyle: 'none',
+      padding: '5px 10px',
+      margin: '0',
+      display: 'block',
+      border: 'solid 1px black',
+      maxWidth: 'calc(100% - 70px)',
+      maxHeight: 'calc(100% - 60px)',
+      overflow: 'auto',
+    };
+    let controlContainer = document.createElement('div');
+    applyStyle(
+      controlContainer,
+      STYLE_CONTROL_PANEL
+    );
+    const body = document.querySelector('body');
+    body.appendChild(controlContainer);
+    const controller = `
+<table>
+  <tr>
+    <td>
+      <select class='representations' style="width: 100%">
+        <option value='0'>Points</option>
+        <option value='1'>Wireframe</option>
+        <option value='2'>Surface</option>
+        <option value='3' selected>Surface With Edges</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td>Line width (Surface with edges)</td>
+    <td>
+      <input class='lw' type='range' min='0.5' max='20' value='1' />
+    </td>
+  </tr>
+  <tr>
+    <td>Point size (Points)</td>
+    <td>
+      <input class='ps' type='range' min='0.5' max='20' value='1' />
+    </td>
+  </tr>
+  <tr>
+    <td>Pick blocks</td>
+    <td>
+      <input type='checkbox' class='pickBlocks'>
+    </td>
+  </tr>
+  <tr>
+    <td>nx</td>
+    <td>
+      <input class='nx' type='range' min='2' max='128' value='32' />
+    </td>
+  </tr>
+  <tr>
+    <td>ny</td>
+    <td>
+      <input class='ny' type='range' min='2' max='128' value='32' />
+    </td>
+  </tr>
+  <td>
+    <button class='resetviewbutton' style="width: 100%">Reset View</button>
+  </td>
+</table>`
+    controlContainer.innerHTML = controller;
+    controlContainer.style.display = 'block';
+
+    let nx = 3;
+    let ny = 3;
+    let picking = false;
+
+    document
+      .querySelector('.representations')
+      .addEventListener('change', (e) => {
+        const newRepValue = Number(e.target.value);
+        app.setRepresentation(newRepValue);
+      });
+    document
+      .querySelector('.lw')
+      .addEventListener('input', (e) => {
+        const newLineWidth = Number(e.target.value);
+        app.setLineWidth(newLineWidth);
+      });
+    document
+      .querySelector('.pickBlocks')
+      .addEventListener('change', () => {
+        const pickEnabled = document.querySelector('.pickBlocks').checked;
+        app.setPicking(pickEnabled);
+      });
+    document
+      .querySelector('.nx')
+      .addEventListener('input', () => {
+        updateDatasets();
+      });
+    document
+      .querySelector('.ny')
+      .addEventListener('input', () => {
+        updateDatasets();
+      });
+    document
+      .querySelector('.resetviewbutton')
+      .addEventListener('click', (e) => {
+        app.resetView();
+      });
+
+    function updateDatasets() {
+      const nx = Number(document.querySelector('.nx').value);
+      const ny = Number(document.querySelector('.ny').value);
+      app.createDatasets(nx, ny)
+      app.resetView();
+    }
+
+    function updateRepresentation() {
+      const newLineWidth = Number(document.querySelector('.lw').value);
+      const pickEnabled = document.querySelector('.pickBlocks').checked;
+      const newPointSize = Number(document.querySelector('.ps').value);
+      const newRepValue = Number(document.querySelector('.representations').value);
+      app.setLineWidth(newLineWidth);
+      app.setPicking(pickEnabled);
+      app.setPointSize(newPointSize);
+      app.setRepresentation(newRepValue);
+    }
+
+    vtkCPDMApp(Module).then(module => {
+      app = module;
       console.log('App created');
-    </script>
-  </body>
+      // -----------------------------------------------------------
+      // Initialize application with nx, ny
+      // -----------------------------------------------------------
+      app.initialize();
+      updateDatasets();
+      updateRepresentation();
+      app.run();
+    })
+  </script>
+</body>
+
 </html>
