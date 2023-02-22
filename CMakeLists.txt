@@ -8,6 +8,7 @@ COMPONENTS
   RenderingOpenGL2
   RenderingUI
   InteractionStyle
+  InteractionWidgets
 )
 
 if (NOT VTK_FOUND)
