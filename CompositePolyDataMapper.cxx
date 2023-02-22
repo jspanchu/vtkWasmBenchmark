@@ -15,6 +15,8 @@
 
 #include "vtkActor.h"
 #include "vtkCamera.h"
+#include "vtkCameraOrientationRepresentation.h"
+#include "vtkCameraOrientationWidget.h"
 #include "vtkCellData.h"
 #include "vtkCompositeDataDisplayAttributes.h"
 #include "vtkCompositeDataSet.h"
@@ -231,6 +233,7 @@ static void setPicking(bool enabled) {
     iren->SetInteractorStyle(pickStyle);
   } else if (switchStyle != nullptr) {
     iren->SetInteractorStyle(switchStyle);
+    switchStyle->SetCurrentStyleToTrackballCamera();
   }
   std::cout << __func__ << "(" << enabled << ")" << std::endl;
   iren->GetRenderWindow()->Render();
@@ -267,6 +270,16 @@ static int run() {
   auto ren = win->GetRenderers()->GetFirstRenderer();
   std::cout << __func__ << std::endl;
   ren->AddActor(actor);
+
+  // camera orientation widget
+  vtkNew<vtkCameraOrientationWidget> camManipulator;
+  camManipulator->SetParentRenderer(ren);
+  camManipulator->On();
+  auto rep = vtkCameraOrientationRepresentation::SafeDownCast(
+      camManipulator->GetRepresentation());
+  rep->AnchorToLowerLeft();
+
+  iren->UpdateSize(600, 600);
   ren->GetActiveCamera()->Elevation(30.0);
   ren->GetActiveCamera()->Azimuth(-40.0);
   ren->GetActiveCamera()->Zoom(3.0);
@@ -295,7 +308,6 @@ static void initialize() {
   win->AddRenderer(ren);
   win->SetInteractor(iren);
   win->SetMultiSamples(0);
-  win->SetSize(1920, 1080);
   std::cout << __func__ << std::endl;
 }
 
