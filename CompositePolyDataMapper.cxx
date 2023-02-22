@@ -201,7 +201,7 @@ static int createDatasets(int nx, int ny) {
       pdset->SetPartition(partitionIdx++, 2, cylinder);
     }
   }
-  std::cout << "Created datasets nx=" << nx << " ny=" << ny << std::endl;
+  std::cout << __func__ << '(' << nx << ',' << ny << ')' << std::endl;
 
   vtkSmartPointer<vtkCompositePolyDataMapper2> mapper =
       vtkSmartPointer<vtkCompositePolyDataMapper2>::New();
@@ -216,6 +216,7 @@ static int createDatasets(int nx, int ny) {
 
 static void setLineWidth(float value) {
   actor->GetProperty()->SetLineWidth(value);
+  std::cout << __func__ << "(" << value << ")" << std::endl;
   iren->GetRenderWindow()->Render();
 }
 
@@ -231,11 +232,13 @@ static void setPicking(bool enabled) {
   } else if (switchStyle != nullptr) {
     iren->SetInteractorStyle(switchStyle);
   }
+  std::cout << __func__ << "(" << enabled << ")" << std::endl;
   iren->GetRenderWindow()->Render();
 }
 
 static void setPointSize(float value) {
   actor->GetProperty()->SetPointSize(value);
+  std::cout << __func__ << "(" << value << ")" << std::endl;
   iren->GetRenderWindow()->Render();
 }
 
@@ -247,6 +250,7 @@ static void setRepresentation(int representation) {
     actor->GetProperty()->SetEdgeVisibility(false);
   }
   actor->GetProperty()->SetRepresentation(representation);
+  std::cout << __func__ << "(" << representation << ")" << std::endl;
   iren->GetRenderWindow()->Render();
 }
 
@@ -254,12 +258,14 @@ static void resetView() {
   auto win = iren->GetRenderWindow();
   auto ren = win->GetRenderers()->GetFirstRenderer();
   ren->ResetCamera();
+  std::cout << __func__ << std::endl;
   iren->GetRenderWindow()->Render();
 }
 
 static int run() {
   auto win = iren->GetRenderWindow();
   auto ren = win->GetRenderers()->GetFirstRenderer();
+  std::cout << __func__ << std::endl;
   ren->AddActor(actor);
   ren->GetActiveCamera()->Elevation(30.0);
   ren->GetActiveCamera()->Azimuth(-40.0);
@@ -290,6 +296,7 @@ static void initialize() {
   win->SetInteractor(iren);
   win->SetMultiSamples(0);
   win->SetSize(1920, 1080);
+  std::cout << __func__ << std::endl;
 }
 
 #ifndef __EMSCRIPTEN__
