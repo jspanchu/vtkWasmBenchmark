@@ -76,13 +76,13 @@
   <tr>
     <td>Line width (Surface with edges)</td>
     <td>
-      <input class='lw' type='range' min='0.5' max='20' value='1' />
+      <input class='lw' type='range' min='1' max='20' value='1' />
     </td>
   </tr>
   <tr>
     <td>Point size (Points)</td>
     <td>
-      <input class='ps' type='range' min='0.5' max='20' value='1' />
+      <input class='ps' type='range' min='1' max='20' value='1' />
     </td>
   </tr>
   <tr>
@@ -125,6 +125,12 @@
       .addEventListener('input', (e) => {
         const newLineWidth = Number(e.target.value);
         app.setLineWidth(newLineWidth);
+      });
+    document
+      .querySelector('.ps')
+      .addEventListener('input', (e) => {
+        const newPointSize = Number(e.target.value);
+        app.setPointSize(newPointSize);
       });
     document
       .querySelector('.pickBlocks')
