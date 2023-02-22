@@ -39,6 +39,12 @@
     // -----------------------------------------------------------
     // copied from vtk.js/Rendering/Misc/FullScreenRenderWindow.js
 
+    // define representation default settings here.
+    let lineWidth = 1;
+    let pointSize = 1;
+    let nx = 8;
+    let ny = 8;
+
     const STYLE_CONTROL_PANEL = {
       position: 'absolute',
       left: '25px',
@@ -73,16 +79,18 @@
       </select>
     </td>
   </tr>
-  <tr>
+  <tr id='lw_row' style='display: none;'>
     <td>Line width (Surface with edges)</td>
     <td>
-      <input class='lw' type='range' min='1' max='20' value='1' />
+      <input class='lw' type='range' min='1' max='20' value='${lineWidth}' oninput='this.nextElementSibling.value = this.value'>
+      <output>${lineWidth}</output>
     </td>
   </tr>
-  <tr>
+  <tr id='ps_row' style='display: none;'>
     <td>Point size (Points)</td>
     <td>
-      <input class='ps' type='range' min='1' max='20' value='1' />
+      <input class='ps' type='range' min='1' max='20' value='${pointSize}' oninput='this.nextElementSibling.value = this.value'>
+      <output>${pointSize}</output>
     </td>
   </tr>
   <tr>
@@ -92,15 +100,17 @@
     </td>
   </tr>
   <tr>
-    <td>nx</td>
+    <td>nx </td>
     <td>
-      <input class='nx' type='range' min='2' max='128' value='32' />
+      <input class='nx' type='range' min='2' max='32' value='${nx}' oninput="this.nextElementSibling.value = this.value">
+      <output>${nx}</output>
     </td>
   </tr>
   <tr>
-    <td>ny</td>
+    <td>ny </td>
     <td>
-      <input class='ny' type='range' min='2' max='128' value='32' />
+      <input class='ny' type='range' min='2' max='32' value='${ny}' oninput="this.nextElementSibling.value = this.value">
+      <output>${ny}</output>
     </td>
   </tr>
   <td>
@@ -110,27 +120,24 @@
     controlContainer.innerHTML = controller;
     controlContainer.style.display = 'block';
 
-    let nx = 3;
-    let ny = 3;
-    let picking = false;
-
     document
       .querySelector('.representations')
       .addEventListener('change', (e) => {
         const newRepValue = Number(e.target.value);
         app.setRepresentation(newRepValue);
+        updatePropertyWidgets();
       });
     document
       .querySelector('.lw')
       .addEventListener('input', (e) => {
-        const newLineWidth = Number(e.target.value);
-        app.setLineWidth(newLineWidth);
+        lineWidth = Number(e.target.value);
+        app.setLineWidth(lineWidth);
       });
     document
       .querySelector('.ps')
       .addEventListener('input', (e) => {
-        const newPointSize = Number(e.target.value);
-        app.setPointSize(newPointSize);
+        pointSize = Number(e.target.value);
+        app.setPointSize(pointSize);
       });
     document
       .querySelector('.pickBlocks')
@@ -154,9 +161,21 @@
         app.resetView();
       });
 
+    function updatePropertyWidgets() {
+      const newRepValue = Number(document.querySelector('.representations').value);
+      document.getElementById('ps_row').style.display = 'none';
+      document.getElementById('lw_row').style.display = 'none';
+      if (newRepValue === 0) {
+        document.getElementById('ps_row').style.display = 'table-row';
+      }
+      if (newRepValue === 3) {
+        document.getElementById('lw_row').style.display = 'table-row';
+      }
+    }
+
     function updateDatasets() {
-      const nx = Number(document.querySelector('.nx').value);
-      const ny = Number(document.querySelector('.ny').value);
+      nx = Number(document.querySelector('.nx').value);
+      ny = Number(document.querySelector('.ny').value);
       app.createDatasets(nx, ny)
       app.resetView();
     }
@@ -170,6 +189,7 @@
       app.setPicking(pickEnabled);
       app.setPointSize(newPointSize);
       app.setRepresentation(newRepValue);
+      updatePropertyWidgets();
     }
 
     vtkCPDMApp(Module).then(module => {
