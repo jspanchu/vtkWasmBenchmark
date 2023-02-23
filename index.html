@@ -118,6 +118,7 @@
       <select class='pickerType' style="width: 100%">
         <option value='0' selected>Hover Pre-select</option>
         <option value='1'>Area Picker ('r' toggles rubberband)</option>
+        <option value='2'>None</option>
       </select>
     </td>
     <tr id='selection_color_row' style='display: none;'>
@@ -259,6 +260,11 @@
         app.setHoverPreSelect(false);
         app.setAreaPick(true);
         document.getElementById('selection_color_row').style.display = 'table-row';
+      }
+      else if (newPickerType === 2) {
+        app.setHoverPreSelect(false);
+        app.setAreaPick(false);
+        document.getElementById('selection_color_row').style.display = 'none';
       }
     }
 
