@@ -256,6 +256,7 @@ static int createDatasets(int nx, int ny) {
   std::cout << pdset->GetNumberOfPartitionedDataSets() << std::endl;
   std::cout << __func__ << '(' << nx << ',' << ny << ')' << std::endl;
 
+  pickStyle->SetDatasets(pdset);
   vtkSmartPointer<vtkCompositePolyDataMapper2> mapper =
       vtkSmartPointer<vtkCompositePolyDataMapper2>::New();
   mapper->SetCompositeDataDisplayAttributes(cdsa);
@@ -315,7 +316,6 @@ static void setHoverPreSelect(bool enabled) {
   // Setup picker
   if (enabled && pickStyle != nullptr) {
     pickStyle->SetDefaultRenderer(ren);
-    pickStyle->SetDatasets(pdset);
     pickStyle->AddSlectionRepresentationsToRenderer(ren);
     iren->SetInteractorStyle(pickStyle);
     // remove coloring from area selections.
