@@ -52,9 +52,6 @@
 
 namespace {
 
-constexpr float SELECTED_COMPOSITE_OPACITY = 0.5;
-constexpr float SELECTED_BLOCK_OPACITY = 1.0;
-
 // Handle mouse events
 class HoverPickStyle : public vtkInteractorStyleTrackballCamera {
 public:
