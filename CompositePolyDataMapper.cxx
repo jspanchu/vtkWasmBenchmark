@@ -266,6 +266,13 @@ static int createDatasets(int nx, int ny) {
   return 1;
 }
 
+static void clearSelections() {
+  // remove coloring from area selections.
+  cdsa->RemoveBlockColors();
+  std::cout << __func__ << std::endl;
+  iren->GetRenderWindow()->Render();
+}
+
 static void setEdgeColor(float r, float g, float b) {
   actor->GetProperty()->SetEdgeColor(r, g, b);
 }
@@ -318,8 +325,6 @@ static void setHoverPreSelect(bool enabled) {
     pickStyle->SetDefaultRenderer(ren);
     pickStyle->AddSlectionRepresentationsToRenderer(ren);
     iren->SetInteractorStyle(pickStyle);
-    // remove coloring from area selections.
-    cdsa->RemoveBlockColors();
   } else if (switchStyle != nullptr) {
     iren->SetInteractorStyle(switchStyle);
     switchStyle->SetCurrentStyleToTrackballCamera();
@@ -435,6 +440,7 @@ int main(int argc, char *argv[]) {
 EMSCRIPTEN_BINDINGS(module) {
   emscripten::function("initialize", &initialize);
   emscripten::function("run", &run);
+  emscripten::function("clearSelections", &clearSelections);
   emscripten::function("createDatasets", &createDatasets);
   emscripten::function("setEdgeColor", &setEdgeColor);
   emscripten::function("setLayerVisibility", &setLayerVisibility);

@@ -163,6 +163,9 @@
   <td>
     <button class='resetviewbutton' style="width: 100%">Reset View</button>
   </td>
+  <td>
+    <button class='clearselectionbutton' style="width: 100%">Clear Selection</button>
+  </td>
 </table>`
     controlContainer.innerHTML = controller;
     controlContainer.style.display = 'block';
@@ -235,6 +238,11 @@
       .querySelector('.resetviewbutton')
       .addEventListener('click', () => {
         app.resetView();
+      });
+    document
+      .querySelector('.clearselectionbutton')
+      .addEventListener('click', () => {
+        app.clearSelections();
       });
 
     function updatePropertyWidgets() {
