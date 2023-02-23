@@ -50,7 +50,6 @@
     // define representation default settings here.
     let lineWidth = 1;
     let pointSize = 1;
-    let pickEnabled = false;
     let layer0Visibility = true; // cones
     let layer1Visibility = true; // spheres
     let layer2Visibility = true; // cylinders
@@ -114,10 +113,19 @@
     </td>
   </tr>
   <tr>
-    <td>Pick blocks</td>
+    <td>Selector type</td>
     <td>
-      <input type='checkbox' class='pickBlocks checked='${pickEnabled}'>
+      <select class='pickerType' style="width: 100%">
+        <option value='0' selected>Hover Pre-select</option>
+        <option value='1'>Area Picker ('r' toggles rubberband)</option>
+      </select>
     </td>
+    <tr id='selection_color_row' style='display: none;'>
+      <td>
+        <label>Selected Block Color: </label>
+        <input class='selectionColor' type='color', value='#FFF00F'/>
+      </td>
+    </tr>
   </tr>
   <tr>
     <td>Layer 0 (Cones)</td>
@@ -178,7 +186,6 @@
         const color = hexToRGB(e.target.value);
         app.setEdgeColor(color.r / 255.0, color.g / 255.0, color.b / 255.0);
       });
-
     document
       .querySelector('.ps')
       .addEventListener('input', (e) => {
@@ -186,10 +193,14 @@
         app.setPointSize(pointSize);
       });
     document
-      .querySelector('.pickBlocks')
+      .querySelector('.pickerType')
       .addEventListener('change', () => {
-        pickEnabled = document.querySelector('.pickBlocks').checked;
-        app.setPicking(pickEnabled);
+        updatePickers();
+      });
+    document
+      .querySelector('.selectionColor').addEventListener('input', (e) => {
+        const color = hexToRGB(e.target.value);
+        app.setSelectedBlockColor(color.r / 255.0, color.g / 255.0, color.b / 255.0);
       });
     document
       .querySelector('.layer0Visibility')
@@ -221,7 +232,7 @@
       });
     document
       .querySelector('.resetviewbutton')
-      .addEventListener('click', (e) => {
+      .addEventListener('click', () => {
         app.resetView();
       });
 
@@ -237,6 +248,20 @@
       }
     }
 
+    function updatePickers() {
+      const newPickerType = Number(document.querySelector('.pickerType').value);
+      if (newPickerType === 0) {
+        app.setAreaPick(false);
+        app.setHoverPreSelect(true);
+        document.getElementById('selection_color_row').style.display = 'none';
+      }
+      else if (newPickerType === 1) {
+        app.setHoverPreSelect(false);
+        app.setAreaPick(true);
+        document.getElementById('selection_color_row').style.display = 'table-row';
+      }
+    }
+
     function updateDatasets() {
       nx = Number(document.querySelector('.nx').value);
       ny = Number(document.querySelector('.ny').value);
@@ -247,12 +272,10 @@
     function updateRepresentation() {
       const color = hexToRGB(document.querySelector('.edgeColor').value);
       const newLineWidth = Number(document.querySelector('.lw').value);
-      const pickEnabled = document.querySelector('.pickBlocks').checked;
       const newPointSize = Number(document.querySelector('.ps').value);
       const newRepValue = Number(document.querySelector('.representations').value);
       app.setEdgeColor(color.r / 255.0, color.g / 255.0, color.b / 255.0);
       app.setLineWidth(newLineWidth);
-      app.setPicking(pickEnabled);
       app.setPointSize(newPointSize);
       app.setRepresentation(newRepValue);
       updatePropertyWidgets();
@@ -267,6 +290,7 @@
       app.initialize();
       updateDatasets();
       updateRepresentation();
+      updatePickers();
       // sends a resize event so that the render window fills up browser tab dimensions.
       setTimeout(() => {
         window.dispatchEvent(new Event('resize'));

@@ -14,6 +14,7 @@
 =========================================================================*/
 
 #include "vtkActor.h"
+#include "vtkCallbackCommand.h"
 #include "vtkCamera.h"
 #include "vtkCameraOrientationRepresentation.h"
 #include "vtkCameraOrientationWidget.h"
@@ -26,6 +27,8 @@
 #include "vtkElevationFilter.h"
 #include "vtkExtractEdges.h"
 #include "vtkHardwarePicker.h"
+#include "vtkHardwareSelector.h"
+#include "vtkInteractorStyleRubberBandPick.h"
 #include "vtkInteractorStyleSwitch.h"
 #include "vtkInteractorStyleTrackballCamera.h"
 #include "vtkMultiBlockDataSet.h"
@@ -37,8 +40,10 @@
 #include "vtkProperty.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
+#include "vtkRenderedAreaPicker.h"
 #include "vtkRenderer.h"
 #include "vtkRendererCollection.h"
+#include "vtkSelectionNode.h"
 #include "vtkSmartPointer.h"
 #include "vtkSphereSource.h"
 #include "vtkTransform.h"
@@ -128,7 +133,43 @@ vtkPartitionedDataSetCollection *pdset = nullptr;
 HoverPickStyle *pickStyle = nullptr;
 vtkInteractorStyleSwitch *switchStyle = nullptr;
 vtkActor *actor = nullptr;
+vtkActor *areaSelectionActor = nullptr;
+double selectedBlockColor[3] = {0.952, 0.937, 0.368};
 } // namespace
+
+// Called after area picker finished.
+static void EndPick(vtkObject *vtkNotUsed(caller),
+                    unsigned long vtkNotUsed(eventId), void *, void *) {
+  auto win = iren->GetRenderWindow();
+  auto ren = win->GetRenderers()->GetFirstRenderer();
+  vtkNew<vtkHardwareSelector> sel;
+  sel->SetFieldAssociation(vtkDataObject::FIELD_ASSOCIATION_CELLS);
+  sel->SetRenderer(ren);
+
+  double x0 = ren->GetPickX1();
+  double y0 = ren->GetPickY1();
+  double x1 = ren->GetPickX2();
+  double y1 = ren->GetPickY2();
+
+  sel->SetArea(static_cast<int>(x0), static_cast<int>(y0), static_cast<int>(x1),
+               static_cast<int>(y1));
+  vtkSmartPointer<vtkSelection> res;
+  res.TakeReference(sel->Select());
+  if (!res) {
+    cerr << "Selection not supported." << endl;
+    return;
+  }
+
+  vtkSelectionNode *cellids = res->GetNode(0);
+  cdsa->RemoveBlockColors();
+  for (unsigned int i = 0; i < res->GetNumberOfNodes(); ++i) {
+    auto flatIdx = res->GetNode(i)->GetProperties()->Get(
+        vtkSelectionNode::COMPOSITE_INDEX());
+    auto dset = pdset->GetPartition(flatIdx / 2 - 1, 0);
+    cdsa->SetBlockColor(dset, selectedBlockColor);
+  }
+  iren->GetRenderWindow()->Render();
+}
 
 static int createDatasets(int nx, int ny) {
   if (iren == nullptr) {
@@ -212,6 +253,7 @@ static int createDatasets(int nx, int ny) {
       pdset->SetPartition(partitionIdx++, 0, cylinder);
     }
   }
+  std::cout << pdset->GetNumberOfPartitionedDataSets() << std::endl;
   std::cout << __func__ << '(' << nx << ',' << ny << ')' << std::endl;
 
   vtkSmartPointer<vtkCompositePolyDataMapper2> mapper =
@@ -247,7 +289,28 @@ static void setLineWidth(float value) {
   iren->GetRenderWindow()->Render();
 }
 
-static void setPicking(bool enabled) {
+static void setAreaPick(bool enabled) {
+  auto win = iren->GetRenderWindow();
+  auto ren = win->GetRenderers()->GetFirstRenderer();
+  std::cout << __func__ << "(" << enabled << ")" << std::endl;
+  if (enabled) {
+    vtkNew<vtkInteractorStyleRubberBandPick> rbp;
+    iren->SetInteractorStyle(rbp);
+    vtkNew<vtkRenderedAreaPicker> picker;
+    iren->SetPicker(picker);
+    // pass pick events to the HardwareSelector
+    vtkNew<vtkCallbackCommand> cbc;
+    cbc->SetCallback(EndPick);
+    cbc->SetClientData(ren);
+    iren->AddObserver(vtkCommand::EndPickEvent, cbc);
+  } else {
+    iren->SetPicker(nullptr);
+    iren->SetInteractorStyle(switchStyle);
+    switchStyle->SetCurrentStyleToTrackballCamera();
+  }
+}
+
+static void setHoverPreSelect(bool enabled) {
   auto win = iren->GetRenderWindow();
   auto ren = win->GetRenderers()->GetFirstRenderer();
   // Setup picker
@@ -256,6 +319,8 @@ static void setPicking(bool enabled) {
     pickStyle->SetDatasets(pdset);
     pickStyle->AddSlectionRepresentationsToRenderer(ren);
     iren->SetInteractorStyle(pickStyle);
+    // remove coloring from area selections.
+    cdsa->RemoveBlockColors();
   } else if (switchStyle != nullptr) {
     iren->SetInteractorStyle(switchStyle);
     switchStyle->SetCurrentStyleToTrackballCamera();
@@ -288,6 +353,12 @@ static void resetView() {
   ren->ResetCamera();
   std::cout << __func__ << std::endl;
   iren->GetRenderWindow()->Render();
+}
+
+static void setSelectedBlockColor(float r, float g, float b) {
+  selectedBlockColor[0] = r;
+  selectedBlockColor[1] = g;
+  selectedBlockColor[2] = b;
 }
 
 static int run() {
@@ -353,7 +424,8 @@ int main(int argc, char *argv[]) {
   initialize();
   createDatasets(nx, ny);
   setLineWidth(1);
-  setPicking(enable_pick);
+  // setHoverPreSelect(enable_pick);
+  setAreaPick(enable_pick);
   setPointSize(1);
   setRepresentation(3);
   setEdgeColor(0.8, 0.8, 0.8);
@@ -368,9 +440,11 @@ EMSCRIPTEN_BINDINGS(module) {
   emscripten::function("setEdgeColor", &setEdgeColor);
   emscripten::function("setLayerVisibility", &setLayerVisibility);
   emscripten::function("setLineWidth", &setLineWidth);
-  emscripten::function("setPicking", &setPicking);
+  emscripten::function("setAreaPick", &setAreaPick);
+  emscripten::function("setHoverPreSelect", &setHoverPreSelect);
   emscripten::function("setPointSize", &setPointSize);
   emscripten::function("setRepresentation", &setRepresentation);
+  emscripten::function("setSelectedBlockColor", &setSelectedBlockColor);
   emscripten::function("resetView", &resetView);
 }
 #endif
