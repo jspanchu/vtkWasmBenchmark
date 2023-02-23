@@ -274,7 +274,6 @@ static void setLayerVisibility(int layer, bool visible) {
     std::cerr << "Invalid layer " << layer << std::endl;
     return;
   }
-  cdsa->RemoveBlockVisibilities();
   for (auto &id : blockIdsPerLayer[layer]) {
     std::cout << id << '\n';
     cdsa->SetBlockVisibility(pdset->GetPartition(id, 0), visible);
