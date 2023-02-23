@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     } else if (std::string(argv[i]) == "--help" ||
                std::string(argv[i]) == "-h") {
       std::cout
-          << "Usage: ./bench OPTIONS"
+          << "Usage: ./vtkwasmbenchmark OPTIONS"
           << "\n"
           << "\t-nx <number of objects along X direction> \n"
           << "\t-ny <number of objects along Y direction> \n"
