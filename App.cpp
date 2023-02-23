@@ -259,6 +259,33 @@ void BenchmarkApp::SetSelectedBlockColor(float r, float g, float b) {
   this->SelectedBlockColor.Set(r, g, b);
 }
 
+CameraState BenchmarkApp::GetCameraState() {
+  auto ren = this->Window->GetRenderers()->GetFirstRenderer();
+  if (ren == nullptr) {
+    return {};
+  }
+  auto cam = ren->GetActiveCamera();
+  CameraState camState;
+  cam->GetViewUp(camState.viewUp);
+  cam->GetPosition(camState.position);
+  cam->GetFocalPoint(camState.focalPoint);
+  camState.viewAngle = cam->GetViewAngle();
+  return camState;
+}
+
+void BenchmarkApp::SetCameraState(CameraState &state) {
+  auto ren = this->Window->GetRenderers()->GetFirstRenderer();
+  if (ren == nullptr) {
+    return;
+  }
+  auto cam = ren->GetActiveCamera();
+  cam->SetViewUp(state.viewUp);
+  cam->SetPosition(state.position);
+  cam->SetFocalPoint(state.focalPoint);
+  cam->SetViewAngle(state.viewAngle);
+  ren->ResetCameraClippingRange();
+}
+
 // Called after area picker finished.
 void BenchmarkApp::EndPickHandler(vtkObject *, unsigned long, void *) {
   auto ren = this->Window->GetRenderers()->GetFirstRenderer();

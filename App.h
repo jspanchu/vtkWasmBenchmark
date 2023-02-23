@@ -10,6 +10,14 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkVector.h>
 
+class CameraState {
+public:
+  double viewUp[3];
+  double position[3];
+  double focalPoint[3];
+  double viewAngle;
+};
+
 class BenchmarkApp {
 public:
   BenchmarkApp();
@@ -32,6 +40,8 @@ public:
   void SetPointSize(float size);
   void SetRepresentation(int representation);
   void SetSelectedBlockColor(float r, float g, float b);
+  CameraState GetCameraState();
+  void SetCameraState(CameraState &state);
 
 protected:
   void EndPickHandler(vtkObject *, unsigned long, void *);
@@ -72,7 +82,9 @@ EMSCRIPTEN_BINDINGS(benchmark_app_binding) {
       .function("setRepresentation", &BenchmarkApp::SetRepresentation)
       .function("setSelectedBlockColor", &BenchmarkApp::SetSelectedBlockColor)
       .function("resetView", &BenchmarkApp::ResetView)
-      .function("render", &BenchmarkApp::Render);
+      .function("render", &BenchmarkApp::Render)
+      .function("getCameraState", &BenchmarkApp::GetCameraState)
+      .function("setCameraState", &BenchmarkApp::SetCameraState);
   emscripten::enum_<BenchmarkApp::LayerID>("LayerID")
       .value("Cone", BenchmarkApp::LayerID::Cone)
       .value("Sphere", BenchmarkApp::LayerID::Sphere)
@@ -81,5 +93,16 @@ EMSCRIPTEN_BINDINGS(benchmark_app_binding) {
       .value("Area", BenchmarkApp::PickType::Area)
       .value("Hover", BenchmarkApp::PickType::Hover)
       .value("None", BenchmarkApp::PickType::None);
+  emscripten::value_object<CameraState>("CameraState")
+      .field("viewUp", &CameraState::viewUp)
+      .field("position", &CameraState::position)
+      .field("focalPoint", &CameraState::focalPoint)
+      .field("viewAngle", &CameraState::viewAngle);
+  // Register std::array<int, 2> because CameraState::viewUp and others are
+  // interpreted as such
+  emscripten::value_array<std::array<double, 3>>("array_double_3")
+      .element(emscripten::index<0>())
+      .element(emscripten::index<1>())
+      .element(emscripten::index<2>());
 }
 #endif
