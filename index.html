@@ -7,7 +7,7 @@
 
 <body>
   <canvas id="canvas" style="position: absolute; left: 0; top: 0;"></canvas>
-  <script type="text/javascript" src="CompositePolyDataMapper.js"></script>
+  <script type="text/javascript" src="vtkwasmbenchmark.js"></script>
   <script type='module'>
     var Module = {
       canvas: (function () {
@@ -47,7 +47,8 @@
         : null;
     }
 
-    // define representation default settings here.
+    // define benchmark app default settings here.
+    let scrollSensitivity = 0.15;
     let lineWidth = 1;
     let pointSize = 1;
     let layer0Visibility = true; // cones
@@ -85,6 +86,13 @@
     const controller = `
 <table>
   <tr>
+    <td>Scroll sensitivity </td>
+    <td>
+      <input class='scrollSensitivity' type='range' min='0' max='1' value='${scrollSensitivity}' step='0.01' oninput="this.nextElementSibling.value = this.value">
+      <output>${scrollSensitivity}</output>
+    </td>
+  </tr>
+  <tr>
     <td>
       <select class='representations' style="width: 100%">
         <option value='0'>Points</option>
@@ -116,8 +124,8 @@
     <td>Selector type</td>
     <td>
       <select class='pickerType' style="width: 100%">
-        <option value='0' selected>Hover Pre-select</option>
-        <option value='1'>Area Picker ('r' toggles rubberband)</option>
+        <option value='0' selected>Area Picker ('r' toggles rubberband)</option>
+        <option value='1'>Hover Pre-select</option>
         <option value='2'>None</option>
       </select>
     </td>
@@ -173,10 +181,17 @@
     // Use the export name to instantiate the app
     var app = null;
     document
+      .querySelector('.scrollSensitivity')
+      .addEventListener('input', (e) => {
+        scrollSensitivity = Number(e.target.value);
+        app.setScrollSensitivity(scrollSensitivity);
+      });
+    document
       .querySelector('.representations')
       .addEventListener('change', (e) => {
         const newRepValue = Number(e.target.value);
         app.setRepresentation(newRepValue);
+        app.render();
         updatePropertyWidgets();
       });
     document
@@ -184,17 +199,20 @@
       .addEventListener('input', (e) => {
         lineWidth = Number(e.target.value);
         app.setLineWidth(lineWidth);
+        app.render();
       });
     document
       .querySelector('.edgeColor').addEventListener('input', (e) => {
         const color = hexToRGB(e.target.value);
         app.setEdgeColor(color.r / 255.0, color.g / 255.0, color.b / 255.0);
+        app.render();
       });
     document
       .querySelector('.ps')
       .addEventListener('input', (e) => {
         pointSize = Number(e.target.value);
         app.setPointSize(pointSize);
+        app.render();
       });
     document
       .querySelector('.pickerType')
@@ -210,19 +228,22 @@
       .querySelector('.layer0Visibility')
       .addEventListener('change', () => {
         layer0Visibility = document.querySelector('.layer0Visibility').checked;
-        app.setLayerVisibility(0, layer0Visibility);
+        app.setLayerVisibility(Module.LayerID.Cone, layer0Visibility);
+        app.render();
       });
     document
       .querySelector('.layer1Visibility')
       .addEventListener('change', () => {
         layer1Visibility = document.querySelector('.layer1Visibility').checked;
-        app.setLayerVisibility(1, layer1Visibility);
+        app.setLayerVisibility(Module.LayerID.Sphere, layer1Visibility);
+        app.render();
       });
     document
       .querySelector('.layer2Visibility')
       .addEventListener('change', () => {
         layer2Visibility = document.querySelector('.layer2Visibility').checked;
-        app.setLayerVisibility(2, layer2Visibility);
+        app.setLayerVisibility(Module.LayerID.Cylinder, layer2Visibility);
+        app.render();
       });
     document
       .querySelector('.nx')
@@ -243,6 +264,7 @@
       .querySelector('.clearselectionbutton')
       .addEventListener('click', () => {
         app.clearSelections();
+        app.render();
       });
 
     function updatePropertyWidgets() {
@@ -260,19 +282,16 @@
     function updatePickers() {
       const newPickerType = Number(document.querySelector('.pickerType').value);
       if (newPickerType === 0) {
-        app.setAreaPick(false);
-        app.setHoverPreSelect(true);
-        document.getElementById('selection_color_row').style.display = 'none';
+        document.getElementById('selection_color_row').style.display = 'table-row';
+        app.setPickType(Module.PickType.Area);
       }
       else if (newPickerType === 1) {
-        app.setHoverPreSelect(false);
-        app.setAreaPick(true);
-        document.getElementById('selection_color_row').style.display = 'table-row';
+        document.getElementById('selection_color_row').style.display = 'none';
+        app.setPickType(Module.PickType.Hover);
       }
       else if (newPickerType === 2) {
-        app.setHoverPreSelect(false);
-        app.setAreaPick(false);
         document.getElementById('selection_color_row').style.display = 'none';
+        app.setPickType(Module.PickType.None);
       }
     }
 
@@ -281,6 +300,7 @@
       ny = Number(document.querySelector('.ny').value);
       app.createDatasets(nx, ny)
       app.resetView();
+      app.render();
     }
 
     function updateRepresentation() {
@@ -292,16 +312,19 @@
       app.setLineWidth(newLineWidth);
       app.setPointSize(newPointSize);
       app.setRepresentation(newRepValue);
+      app.render();
       updatePropertyWidgets();
     }
 
     vtkCPDMApp(Module).then(module => {
-      app = module;
+      app = new Module.BenchmarkApp();
       console.log('App created');
       // -----------------------------------------------------------
       // Initialize application with nx, ny
       // -----------------------------------------------------------
       app.initialize();
+      app.setScrollSensitivity(scrollSensitivity);
+      app.setSelectedBlockColor(0.952, 0.937, 0.368);
       updateDatasets();
       updateRepresentation();
       updatePickers();

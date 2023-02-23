@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(CompositePolyDataMapper C CXX)
+project(vtkWasmBenchmark C CXX)
 
 find_package(VTK
 COMPONENTS
@@ -16,15 +16,24 @@ if (NOT VTK_FOUND)
   return ()
 endif ()
 
-add_executable(CompositePolyDataMapper CompositePolyDataMapper.cxx)
+add_executable(vtkwasmbenchmark 
+  main.cpp 
+  App.cpp
+  HoverPickStyle.cpp
+)
 
-target_link_libraries(CompositePolyDataMapper
+target_include_directories(vtkwasmbenchmark
+  PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(vtkwasmbenchmark
   PRIVATE
   ${VTK_LIBRARIES}
 )
 
 vtk_module_autoinit(
-  TARGETS  CompositePolyDataMapper
+  TARGETS  vtkwasmbenchmark
   MODULES  ${VTK_LIBRARIES}
 )
 
@@ -127,14 +136,14 @@ if (EMSCRIPTEN)
     )
   endif()
 
-  target_compile_options(CompositePolyDataMapper
+  target_compile_options(vtkwasmbenchmark
     PUBLIC
       ${emscripten_compile_options}
       ${emscripten_optimizations}
       ${emscripten_debug_options}
   )
 
-  target_link_options(CompositePolyDataMapper
+  target_link_options(vtkwasmbenchmark
     PUBLIC
       ${emscripten_link_options}
       ${emscripten_optimizations}
@@ -146,11 +155,11 @@ if (EMSCRIPTEN)
   # -----------------------------------------------------------------------------
   
   add_custom_command(
-    TARGET CompositePolyDataMapper
+    TARGET vtkwasmbenchmark
     POST_BUILD
     COMMAND
       ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/index.html"
-        $<TARGET_FILE_DIR:CompositePolyDataMapper>
+        $<TARGET_FILE_DIR:vtkwasmbenchmark>
   )
 endif ()

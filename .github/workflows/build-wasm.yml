@@ -33,7 +33,7 @@ jobs:
       uses: actions/checkout@v3
     - name: Configure
       run: |
-        emcmake cmake -GNinja -S /project/src -B /project/build -DCMAKE_BUILD_TYPE=Release -DDEBUGINFO=NONE -DVTK_DIR=$VTK_DIR
+        emcmake cmake -GNinja -S /project/src -B /project/build -DCMAKE_BUILD_TYPE=Release -DDEBUGINFO=PROFILE -DVTK_DIR=$VTK_DIR
     - name: Build
       run:
         cmake --build /project/build
@@ -41,8 +41,8 @@ jobs:
       run: |
         cd /project/build
         mkdir /web_content
-        mv CompositePolyDataMapper.js /web_content/
-        mv CompositePolyDataMapper.wasm /web_content/
+        mv vtkwasmbenchmark.js /web_content/
+        mv vtkwasmbenchmark.wasm /web_content/
         mv index.html /web_content/
     - name: Setup Pages
       uses: actions/configure-pages@v3
