@@ -319,7 +319,7 @@ void BenchmarkApp::EndPickHandler(vtkObject *, unsigned long, void *) {
   for (unsigned int i = 0; i < res->GetNumberOfNodes(); ++i) {
     auto flatIdx = res->GetNode(i)->GetProperties()->Get(
         vtkSelectionNode::COMPOSITE_INDEX());
-    auto dset = this->Meshes->GetPartition(flatIdx / 2 - 1, 0);
+    auto dset = this->Meshes->GetDataSet(flatIdx);
     this->DisplayAttributes->SetBlockColor(dset,
                                            this->SelectedBlockColor.GetData());
   }
