@@ -160,6 +160,7 @@ if (EMSCRIPTEN)
     COMMAND
       ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/index.html"
+        "${CMAKE_CURRENT_SOURCE_DIR}/glmetrichooks.js"
         $<TARGET_FILE_DIR:vtkwasmbenchmark>
   )
 endif ()

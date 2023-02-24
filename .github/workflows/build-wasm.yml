@@ -41,6 +41,7 @@ jobs:
       run: |
         cd /project/build
         mkdir /web_content
+        mv glmetrichooks.js /web_content/
         mv vtkwasmbenchmark.js /web_content/
         mv vtkwasmbenchmark.wasm /web_content/
         mv index.html /web_content/

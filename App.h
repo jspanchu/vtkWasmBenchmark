@@ -27,7 +27,7 @@ public:
   enum LayerID { Cone = 0, Sphere, Cylinder, NumLayers };
 
   void ClearSelections();
-  void CreateDatasets(int nx, int ny);
+  int CreateDatasets(int nx, int ny);
   void Initialize();
   void Render();
   void ResetView();
@@ -45,6 +45,7 @@ public:
 
 protected:
   void EndPickHandler(vtkObject *, unsigned long, void *);
+  void EndRenderHandler(vtkObject *, unsigned long, void *);
 
 private:
   vtkNew<vtkIdList> BlockIdsPerLayer[NumLayers];

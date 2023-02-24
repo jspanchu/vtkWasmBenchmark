@@ -7,6 +7,7 @@
 
 <body>
   <canvas id="canvas" style="position: absolute; left: 0; top: 0;"></canvas>
+  <script type="text/javascript" src="glmetrichooks.js"></script>
   <script type="text/javascript" src="vtkwasmbenchmark.js"></script>
   <script type='module'>
     var Module = {
@@ -98,13 +99,15 @@
       </td>
     </tr>
     <tr id='lw_row' style='display: none;'>
-      <td>Line width (Surface with edges)</td>
+      <td>Line width</td>
       <td>
         <input class='lw' type='range' min='1' max='20' value='${lineWidth}' oninput='this.nextElementSibling.value = this.value'>
         <output>${lineWidth}</output>
       </td>
+    </tr>
+    <tr id='ec_row' style='display: none;'>
       <td>
-        <label>Color: </label>
+        <label>Edge color: </label>
         <input class='edgeColor' type='color', value='#FFFFFF'/>
       </td>
     </tr>
@@ -125,7 +128,7 @@
         </select>
       </td>
       <tr id='selection_color_row' style='display: none;'>
-        <td>Selected Block Color ('r' toggles rubberband): </td>
+        <td>Selected block color ('r' toggles rubberband): </td>
         <td>
           <input class='selectionColor' type='color', value='#FFF00F'/>
         </td>
@@ -159,14 +162,14 @@
     <tr>
       <td>nx </td>
       <td>
-        <input class='nx' type='range' min='2' max='32' value='${nx}' oninput="this.nextElementSibling.value = this.value">
+        <input class='nx' type='range' min='2' max='64' value='${nx}' oninput="this.nextElementSibling.value = this.value">
         <output>${nx}</output>
       </td>
     </tr>
     <tr>
       <td>ny </td>
       <td>
-        <input class='ny' type='range' min='2' max='32' value='${ny}' oninput="this.nextElementSibling.value = this.value">
+        <input class='ny' type='range' min='2' max='64' value='${ny}' oninput="this.nextElementSibling.value = this.value">
         <output>${ny}</output>
       </td>
     </tr>
@@ -216,6 +219,8 @@
       <button class='clearselectionbutton' style="width: 100%">Clear Selection</button>
     </td>
   </table>
+  <pre id="count"></pre>
+  <pre id="glmetrics"></pre>
 </div>`
     controlContainer.innerHTML = controller;
     controlContainer.style.display = 'block';
@@ -394,11 +399,13 @@
       const newRepValue = Number(document.querySelector('.representations').value);
       document.getElementById('ps_row').style.display = 'none';
       document.getElementById('lw_row').style.display = 'none';
+      document.getElementById('ec_row').style.display = 'none';
       if (newRepValue === 0) {
         document.getElementById('ps_row').style.display = 'table-row';
       }
       if (newRepValue === 3) {
         document.getElementById('lw_row').style.display = 'table-row';
+        document.getElementById('ec_row').style.display = 'table-row';
       }
     }
 
@@ -421,7 +428,8 @@
     function updateDatasets() {
       nx = Number(document.querySelector('.nx').value);
       ny = Number(document.querySelector('.ny').value);
-      app.createDatasets(nx, ny)
+      const numMeshes = app.createDatasets(nx, ny)
+      document.getElementById('count').textContent = `${numMeshes} objects`
       app.resetView();
       app.render();
     }
@@ -443,7 +451,7 @@
       app = new Module.BenchmarkApp();
       console.log('App created');
       // -----------------------------------------------------------
-      // Initialize application with nx, ny
+      // Initialize application
       // -----------------------------------------------------------
       app.initialize();
       app.setScrollSensitivity(scrollSensitivity);

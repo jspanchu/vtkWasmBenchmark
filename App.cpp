@@ -5,6 +5,7 @@
 #include <vtkCameraOrientationRepresentation.h>
 #include <vtkCameraOrientationWidget.h>
 #include <vtkCellData.h>
+#include <vtkCommand.h>
 #include <vtkCompositeDataDisplayAttributes.h>
 #include <vtkCompositePolyDataMapper2.h>
 #include <vtkConeSource.h>
@@ -14,6 +15,7 @@
 #include <vtkInteractorStyleRubberBandPick.h>
 #include <vtkInteractorStyleSwitch.h>
 #include <vtkProperty.h>
+#include <vtkRenderWindow.h>
 #include <vtkRenderedAreaPicker.h>
 #include <vtkRendererCollection.h>
 #include <vtkSelectionNode.h>
@@ -31,7 +33,7 @@ void BenchmarkApp::ClearSelections() {
   this->DisplayAttributes->RemoveBlockColors();
 }
 
-void BenchmarkApp::CreateDatasets(int nx, int ny) {
+int BenchmarkApp::CreateDatasets(int nx, int ny) {
   std::cout << __func__ << '(' << nx << ',' << ny << ')' << std::endl;
 
   // clear previous meshes.
@@ -118,6 +120,7 @@ void BenchmarkApp::CreateDatasets(int nx, int ny) {
   mapper->SetScalarModeToUseCellData();
   mapper->SetInputDataObject(this->Meshes);
   this->Actor->SetMapper(mapper);
+  return this->Meshes->GetNumberOfPartitionedDataSets();
 }
 
 void BenchmarkApp::Initialize() {
@@ -127,6 +130,8 @@ void BenchmarkApp::Initialize() {
   this->Window->AddRenderer(ren);
   this->Window->SetInteractor(this->Interactor);
   this->Window->SetMultiSamples(0);
+  this->Window->AddObserver(vtkCommand::EndEvent, this,
+                            &BenchmarkApp::EndRenderHandler);
 }
 
 void BenchmarkApp::Render() {
@@ -318,4 +323,25 @@ void BenchmarkApp::EndPickHandler(vtkObject *, unsigned long, void *) {
                                            this->SelectedBlockColor.GetData());
   }
   this->Window->Render();
+}
+
+#ifdef __EMSCRIPTEN__
+#include <chrono>
+#include <emscripten.h>
+namespace {
+EM_JS(void, call_tick, (int now), { tick(now); });
+} // namespace
+#endif
+
+// Called after area picker finished.
+void BenchmarkApp::EndRenderHandler(vtkObject *, unsigned long, void *) {
+  std::cout << __func__ << std::endl;
+#ifdef __EMSCRIPTEN__
+  this->Window->WaitForCompletion();
+  using namespace std;
+  const auto now = chrono::duration_cast<chrono::milliseconds>(
+                       chrono::steady_clock::now().time_since_epoch())
+                       .count();
+  ::call_tick(now);
+#endif
 }
