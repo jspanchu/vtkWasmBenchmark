@@ -153,13 +153,6 @@
       </td>
     </tr>
     <tr>
-      <td>Scroll sensitivity </td>
-      <td>
-        <input class='scrollSensitivity' type='range' min='0' max='1' value='${scrollSensitivity}' step='0.01' oninput="this.nextElementSibling.value = this.value">
-        <output>${scrollSensitivity}</output>
-      </td>
-    </tr>
-    <tr>
       <td>nx </td>
       <td>
         <input class='nx' type='range' min='2' max='64' value='${nx}' oninput="this.nextElementSibling.value = this.value">
@@ -175,6 +168,21 @@
     </tr>
   </table>
   <hr>
+  <table>
+    <tr>
+      <td>Scroll sensitivity </td>
+      <td>
+        <input class='scrollSensitivity' type='range' min='0' max='1' value='${scrollSensitivity}' step='0.01' oninput="this.nextElementSibling.value = this.value">
+        <output>${scrollSensitivity}</output>
+      </td>
+    </tr>
+    <tr>
+      <td>Camera Orientation Widget</td>
+      <td>
+        <input type='checkbox' class='camManipulatorVisibility' checked='true'>
+      </td>
+    </tr>
+  </table>
   <table>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <tr>
@@ -210,7 +218,6 @@
       </td>
     </tr>
   </table>
-  <hr>
   <table>
     <td>
       <button class='resetviewbutton' style="width: 100%">Reset View</button>
@@ -219,6 +226,7 @@
       <button class='clearselectionbutton' style="width: 100%">Clear Selection</button>
     </td>
   </table>
+  <hr>
   <pre id="count"></pre>
   <pre id="glmetrics"></pre>
 </div>`
@@ -301,6 +309,13 @@
       .querySelector('.ny')
       .addEventListener('input', () => {
         updateDatasets();
+      });
+    document
+      .querySelector('.camManipulatorVisibility')
+      .addEventListener('change', () => {
+        let camManipulatorVisibility = document.querySelector('.camManipulatorVisibility').checked;
+        app.setShowCameraManipulator(camManipulatorVisibility);
+        app.render();
       });
     document
       .querySelector('.view1button')

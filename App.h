@@ -3,6 +3,8 @@
 #include "HoverPickStyle.h"
 
 #include <vtkActor.h>
+#include <vtkCameraOrientationRepresentation.h>
+#include <vtkCameraOrientationWidget.h>
 #include <vtkCompositeDataDisplayAttributes.h>
 #include <vtkIdList.h>
 #include <vtkInteractorStyleSwitch.h>
@@ -42,6 +44,7 @@ public:
   void SetSelectedBlockColor(float r, float g, float b);
   CameraState GetCameraState();
   void SetCameraState(CameraState &state);
+  void SetShowCameraManipulator(bool show);
 
 protected:
   void EndPickHandler(vtkObject *, unsigned long, void *);
@@ -51,6 +54,8 @@ private:
   vtkNew<vtkIdList> BlockIdsPerLayer[NumLayers];
   vtkVector3d SelectedBlockColor;
   float ScrollSensitivity;
+
+  vtkNew<vtkCameraOrientationWidget> CamManipulator;
 
   vtkNew<vtkPartitionedDataSetCollection> Meshes;
 
@@ -85,7 +90,8 @@ EMSCRIPTEN_BINDINGS(benchmark_app_binding) {
       .function("resetView", &BenchmarkApp::ResetView)
       .function("render", &BenchmarkApp::Render)
       .function("getCameraState", &BenchmarkApp::GetCameraState)
-      .function("setCameraState", &BenchmarkApp::SetCameraState);
+      .function("setCameraState", &BenchmarkApp::SetCameraState)
+      .function("setShowCameraManipulator", &BenchmarkApp::SetShowCameraManipulator);
   emscripten::enum_<BenchmarkApp::LayerID>("LayerID")
       .value("Cone", BenchmarkApp::LayerID::Cone)
       .value("Sphere", BenchmarkApp::LayerID::Sphere)

@@ -2,8 +2,6 @@
 
 #include <vtkAbstractPropPicker.h>
 #include <vtkCamera.h>
-#include <vtkCameraOrientationRepresentation.h>
-#include <vtkCameraOrientationWidget.h>
 #include <vtkCellData.h>
 #include <vtkCommand.h>
 #include <vtkCompositeDataDisplayAttributes.h>
@@ -155,11 +153,10 @@ int BenchmarkApp::Run() {
   }
 
   // camera orientation widget
-  vtkNew<vtkCameraOrientationWidget> camManipulator;
-  camManipulator->SetParentRenderer(ren);
-  camManipulator->On();
+  this->CamManipulator->SetParentRenderer(ren);
+  this->CamManipulator->On();
   auto rep = vtkCameraOrientationRepresentation::SafeDownCast(
-      camManipulator->GetRepresentation());
+      this->CamManipulator->GetRepresentation());
   rep->AnchorToLowerLeft();
 
   this->Interactor->UpdateSize(600, 600);
@@ -289,6 +286,10 @@ void BenchmarkApp::SetCameraState(CameraState &state) {
   cam->SetFocalPoint(state.focalPoint);
   cam->SetViewAngle(state.viewAngle);
   ren->ResetCameraClippingRange();
+}
+
+void BenchmarkApp::SetShowCameraManipulator(bool show) {
+  this->CamManipulator->SetEnabled(show);
 }
 
 // Called after area picker finished.
