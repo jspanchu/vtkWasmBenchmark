@@ -12,9 +12,15 @@ among other things. Features such as hardware picking, surface plus edges,
 vertex visibility and flat shading were previously unsupported by the mapper on WebGL. This quick and simple application demonstrates
 all those features.
 
-## Compile for WebAssembly
+## Compile for WebAssembly (Debug)
 ```
-$ npm run build-wasm
+$ emcmake cmake -GNinja -S src -B build-emscripten -DCMAKE_BUILD_TYPE=Debug -DDEBUGINFO=DEBUG_NATIVE -DOPTIMIZE=NO_OPTIMIZATION -DVTK_DIR=/path/to/vtk/build-em-debug
+$ npm run start
+```
+
+## Compile for WebAssembly (Release)
+```
+$ emcmake cmake -GNinja -S src -B build-emscripten -DCMAKE_BUILD_TYPE=Release -DDEBUGINFO=PROFILE -DOPTIMIZE=SMALLEST_WITH_CLOSURE -DVTK_DIR=/path/to/vtk/build-em-release
 $ npm run start
 ```
 

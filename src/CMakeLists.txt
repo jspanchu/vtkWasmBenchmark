@@ -74,6 +74,9 @@ if (EMSCRIPTEN)
     list(APPEND emscripten_debug_options
       "-g3"
     )
+    list(APPEND emscripten_link_options
+      "SHELL:-s ASSERTIONS=1"
+    )
   endif()
 
   list(APPEND emscripten_link_options
