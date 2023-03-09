@@ -27,30 +27,27 @@ jobs:
     runs-on: ubuntu-latest
     container: 
       image: jspanchu/vtk-wasm-target:latest
-      options: -v ${{ github.workspace }}:/project/src
+      options: -v ${{ github.workspace }}:/project
     steps:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Configure
       run: |
-        emcmake cmake -GNinja -S /project/src -B /project/build -DCMAKE_BUILD_TYPE=Release -DDEBUGINFO=PROFILE -DVTK_DIR=$VTK_DIR
+        emcmake cmake -GNinja -S /project/src -B /project/build-emscripten -DCMAKE_BUILD_TYPE=Release -DDEBUGINFO=PROFILE -DVTK_DIR=$VTK_DIR
     - name: Build
       run:
-        cmake --build /project/build
+        cmake --build /project/build-emscripten
     - name: Prepare artifacts
       run: |
-        cd /project/build
-        mkdir /web_content
-        mv glmetrichooks.js /web_content/
-        mv vtkwasmbenchmark.js /web_content/
-        mv vtkwasmbenchmark.wasm /web_content/
-        mv index.html /web_content/
+        cd /project
+        npm install
+        npm run build
     - name: Setup Pages
       uses: actions/configure-pages@v3
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v1
       with:
-        path: '/web_content/'
+        path: '/project/dist/'
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v1

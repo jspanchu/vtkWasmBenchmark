@@ -20,6 +20,7 @@ $ npm run start
 
 ## Compile for desktop
 ```
+$ cmake -GNinja -S . -B build -DVTK_DIR=/path/to/vtk/build
 $ cd build
 $ ninja
 $ ./vtkwasmbenchmark --help
