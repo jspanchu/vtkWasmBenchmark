@@ -16,24 +16,24 @@ if (NOT VTK_FOUND)
   return ()
 endif ()
 
-add_executable(vtkwasmbenchmark 
+add_executable(vtkRenderingApplication 
   main.cpp 
   App.cpp
   HoverPickStyle.cpp
 )
 
-target_include_directories(vtkwasmbenchmark
+target_include_directories(vtkRenderingApplication
   PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(vtkwasmbenchmark
+target_link_libraries(vtkRenderingApplication
   PRIVATE
   ${VTK_LIBRARIES}
 )
 
 vtk_module_autoinit(
-  TARGETS  vtkwasmbenchmark
+  TARGETS  vtkRenderingApplication
   MODULES  ${VTK_LIBRARIES}
 )
 
@@ -78,7 +78,7 @@ if (EMSCRIPTEN)
 
   list(APPEND emscripten_link_options
     "-lembind"
-    "SHELL:-s EXPORT_NAME=vtkCPDMApp"
+    "SHELL:-s EXPORT_NAME=vtkRenderingApplicationExport"
     "SHELL:-s ALLOW_MEMORY_GROWTH=1"
     "SHELL:-s DEMANGLE_SUPPORT=1"
     "SHELL:-s EMULATE_FUNCTION_POINTER_CASTS=0"
@@ -136,31 +136,17 @@ if (EMSCRIPTEN)
     )
   endif()
 
-  target_compile_options(vtkwasmbenchmark
+  target_compile_options(vtkRenderingApplication
     PUBLIC
       ${emscripten_compile_options}
       ${emscripten_optimizations}
       ${emscripten_debug_options}
   )
 
-  target_link_options(vtkwasmbenchmark
+  target_link_options(vtkRenderingApplication
     PUBLIC
       ${emscripten_link_options}
       ${emscripten_optimizations}
       ${emscripten_debug_options}
-  )
-
-  # -----------------------------------------------------------------------------
-  # Copy HTML to build directory
-  # -----------------------------------------------------------------------------
-  
-  add_custom_command(
-    TARGET vtkwasmbenchmark
-    POST_BUILD
-    COMMAND
-      ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_CURRENT_SOURCE_DIR}/index.html"
-        "${CMAKE_CURRENT_SOURCE_DIR}/glmetrichooks.js"
-        $<TARGET_FILE_DIR:vtkwasmbenchmark>
   )
 endif ()

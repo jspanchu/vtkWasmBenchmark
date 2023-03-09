@@ -1,3 +1,5 @@
+import css from '../styles/app.module.css';
+
 let primMap = {};
 let primCounts = [0, 0, 0];
 primMap[WebGL2RenderingContext.POINTS] = { ndx: 0, fn: count => count, };
@@ -21,6 +23,13 @@ WebGL2RenderingContext.prototype.drawArrays = (function (oldFn) {
   };
 }(WebGL2RenderingContext.prototype.drawArrays));
 
+WebGL2RenderingContext.prototype.drawArraysInstanced = (function (oldFn) {
+  return function (type, first, count, instanceCount) {
+    addCount(this, type, count * instanceCount);
+    oldFn.call(this, type, first, count, instanceCount);
+  };
+}(WebGL2RenderingContext.prototype.drawArraysInstanced));
+
 WebGL2RenderingContext.prototype.drawElements = (function (oldFn) {
   return function (type, count, indexType, offset) {
     addCount(this, type, count);
@@ -31,11 +40,14 @@ WebGL2RenderingContext.prototype.drawElements = (function (oldFn) {
 const times = [];
 const framesWindow = 1000; // ms
 let fps = 0;
+// get the current counts
+const glMetricsContainer = document.getElementById('glmetrics');
+glMetricsContainer.setAttribute('class', css.glMetricsPanel);
+const elem = document.getElementById('info');
+let numObjects = 0;
 
 // this function is called after vtkRenderWindow finishes rendering from C++
 function tick(now) {
-  // get the current counts
-  const elem = document.getElementById('glmetrics');
 
   while (times.length > 0 && times[0] <= now - framesWindow) {
     times.shift();
@@ -45,9 +57,17 @@ function tick(now) {
 
   elem.textContent = 
 `${fps.toFixed(1)} fps
+${numObjects} objects
 ${primCounts[2]} triangles
 ${primCounts[1]} lines
 ${primCounts[0]} points`;
 
   primCounts = [0, 0, 0];
 }
+
+function setNumberOfObjects(num) {
+  numObjects = num;
+  // html text updated on next tick.
+}
+
+export { setNumberOfObjects, tick };

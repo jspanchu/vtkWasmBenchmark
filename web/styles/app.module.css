@@ -1,0 +1,26 @@
+.benchmarkControlPanel {
+  position: absolute;
+  left: 25px;
+  top: 25px;
+  background-color: white;
+  border-radius: 5px;
+  list-style: none;
+  padding: 5px 10px;
+  margin: 0;
+  display: block;
+  border: solid 1px black;
+  max-width: calc(100% - 70px);
+  max-height: calc(100% - 60px);
+  overflow: auto;
+}
+
+.glMetricsPanel {
+  position: absolute;
+  right: 25px;
+  top: 25px;
+  background-color: transparent;
+  color:white;
+  border-radius: 5px;
+  padding: 2px 2px;
+  margin: 0;
+}

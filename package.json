@@ -1,0 +1,32 @@
+{
+    "name": "vtk-wasm-benchmark",
+    "version": "0.0.0-semantically-released",
+    "description": "A suite of benchmarks for VTK C++ with WebAssembly.",
+    "main": "index.js",
+    "scripts": {
+        "build-wasm": "docker run -v $(pwd):$(pwd) -w $(pwd) -e USE_VTK_BUILD_TYPE=Release kitware/vtk-emscripten:latest /bin/bash -c 'cmake -S src -B build-emscripten -GNinja -DVTK_DIR=/VTK-install/Release/lib/cmake/vtk-9.2; cmake --build build-emscripten'",
+        "build-wasm:debug": "docker run -v $(pwd):$(pwd) -w $(pwd) -e USE_VTK_BUILD_TYPE=Debug kitware/vtk-emscripten:latest /bin/bash -c 'cmake -S src -B build-emscripten -GNinja -DVTK_DIR=/VTK-install/Debug/lib/cmake/vtk-9.2 -DDEBUGINFO=DEBUG_NATIVE -DOPTIMIZE=NO_OPTIMIZATION && cmake --build build-emscripten'",
+        "build": "webpack --progress --mode=production ",
+        "build:debug": "webpack --progress --mode=development",
+        "start": "webpack serve --progress --mode=production --static=./dist",
+        "dev": "webpack serve --progress --mode=development --static=./dist"
+    },
+    "keywords": [
+        "vtk",
+        "wasm",
+        "emscripten",
+        "opengl"
+    ],
+    "author": "",
+    "license": "Apache",
+    "devDependencies": {
+        "copy-webpack-plugin": "^11.0.0",
+        "css-loader": "^6.7.3",
+        "html-webpack-plugin": "^5.5.0",
+        "postcss-loader": "^7.0.2",
+        "style-loader": "^3.3.1",
+        "webpack": "^5.75.0",
+        "webpack-cli": "^5.0.1",
+        "webpack-dev-server": "^4.11.1"
+    }
+}

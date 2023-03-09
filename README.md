@@ -13,35 +13,12 @@ vertex visibility and flat shading were previously unsupported by the mapper on 
 all those features.
 
 ## Compile for WebAssembly
-1. Clone the project and configure with CMake. Please refer to VTK for detailed steps on building VTK for WebAssembly.
-
-```bash
-$ git clone https://github.com/jspanchu/vtkWasmBenchmark.git
-$ cd vtkWasmBenchmark
-$ emcmake cmake -GNinja -S . -B build -DVTK_DIR=/path/to/vtk/build-wasm
 ```
-
-2. Build and run.
-
+$ npm run build-wasm
+$ npm run start
 ```
-$ cd build
-$ ninja
-$ python -m http.server 8000
-```
-Open http://localhost:8000
-
 
 ## Compile for desktop
-1. Clone the project and configure with CMake.
-
-```bash
-$ git clone https://github.com/jspanchu/vtkWasmBenchmark.git
-$ cd vtkWasmBenchmark
-$ cmake -GNinja -S . -B build -DVTK_DIR=/path/to/vtk/build
-```
-
-2. Build and run.
-
 ```
 $ cd build
 $ ninja

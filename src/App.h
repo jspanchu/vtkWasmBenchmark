@@ -12,6 +12,8 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkVector.h>
 
+#include <string>
+
 class CameraState {
 public:
   double viewUp[3];
@@ -28,6 +30,8 @@ public:
   enum PickType { Area, Hover, None };
   enum LayerID { Cone = 0, Sphere, Cylinder, NumLayers };
 
+  void LoadFileFromBinary(const std::string& contents);
+  void LoadFile(const std::string& filename);
   void ClearSelections();
   int CreateDatasets(int nx, int ny);
   void Initialize();
@@ -91,7 +95,9 @@ EMSCRIPTEN_BINDINGS(benchmark_app_binding) {
       .function("render", &BenchmarkApp::Render)
       .function("getCameraState", &BenchmarkApp::GetCameraState)
       .function("setCameraState", &BenchmarkApp::SetCameraState)
-      .function("setShowCameraManipulator", &BenchmarkApp::SetShowCameraManipulator);
+      .function("setShowCameraManipulator", &BenchmarkApp::SetShowCameraManipulator)
+      .function("loadFileFromBinary", &BenchmarkApp::LoadFileFromBinary)
+      .function("loadFile", &BenchmarkApp::LoadFile);
   emscripten::enum_<BenchmarkApp::LayerID>("LayerID")
       .value("Cone", BenchmarkApp::LayerID::Cone)
       .value("Sphere", BenchmarkApp::LayerID::Sphere)

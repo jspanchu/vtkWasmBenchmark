@@ -292,6 +292,10 @@ void BenchmarkApp::SetShowCameraManipulator(bool show) {
   this->CamManipulator->SetEnabled(show);
 }
 
+void BenchmarkApp::LoadFileFromBinary(const std::string &contents) {}
+
+void BenchmarkApp::LoadFile(const std::string &filename) {}
+
 // Called after area picker finished.
 void BenchmarkApp::EndPickHandler(vtkObject *, unsigned long, void *) {
   auto ren = this->Window->GetRenderers()->GetFirstRenderer();

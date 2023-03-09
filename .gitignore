@@ -1,0 +1,6 @@
+.clangd/
+.vscode/
+build*
+out/
+node_modules/
+dist/
