@@ -120,14 +120,14 @@ const controller = `
   <tr>
     <td>nx </td>
     <td>
-      <input class='nx' type='range' min='2' max='64' value='${nx}' oninput="this.nextElementSibling.value = this.value">
+      <input class='nx' type='range' min='2' max='128' value='${nx}' oninput="this.nextElementSibling.value = this.value">
       <output>${nx}</output>
     </td>
   </tr>
   <tr>
     <td>ny </td>
     <td>
-      <input class='ny' type='range' min='2' max='64' value='${ny}' oninput="this.nextElementSibling.value = this.value">
+      <input class='ny' type='range' min='2' max='128' value='${ny}' oninput="this.nextElementSibling.value = this.value">
       <output>${ny}</output>
     </td>
   </tr>

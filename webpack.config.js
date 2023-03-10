@@ -58,13 +58,13 @@ module.exports = {
       patterns: [
         {
           from: path.join(
-            __dirname, "build-emscripten", "vtkRenderingApplication.js"
+            __dirname, "src", "build-emscripten", "vtkRenderingApplication.js"
           ),
           to: path.join(__dirname, "dist", "vtkRenderingApplication.js")
         },
         {
           from: path.join(
-            __dirname, "build-emscripten", "vtkRenderingApplication.wasm"
+            __dirname, "src", "build-emscripten", "vtkRenderingApplication.wasm"
           ),
           to: path.join(__dirname, "dist", "vtkRenderingApplication.wasm")
         }

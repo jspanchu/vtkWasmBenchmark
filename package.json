@@ -4,8 +4,8 @@
     "description": "A suite of benchmarks for VTK C++ with WebAssembly.",
     "main": "index.js",
     "scripts": {
-        "build-wasm": "docker run -v $(pwd):$(pwd) -w $(pwd) -e USE_VTK_BUILD_TYPE=Release kitware/vtk-emscripten:latest /bin/bash -c 'cmake -S src -B build-emscripten -GNinja -DVTK_DIR=/VTK-install/Release/lib/cmake/vtk-9.2; cmake --build build-emscripten'",
-        "build-wasm:debug": "docker run -v $(pwd):$(pwd) -w $(pwd) -e USE_VTK_BUILD_TYPE=Debug kitware/vtk-emscripten:latest /bin/bash -c 'cmake -S src -B build-emscripten -GNinja -DVTK_DIR=/VTK-install/Debug/lib/cmake/vtk-9.2 -DDEBUGINFO=DEBUG_NATIVE -DOPTIMIZE=NO_OPTIMIZATION && cmake --build build-emscripten'",
+        "build-wasm": "npx itk-wasm -i kitware/vtk-wasm -b build-emscripten -s src build",
+        "build-wasm:debug": "npx itk-wasm -i kitware/vtk-wasm -b build-emscripten -s src build -- -DDEBUGINFO=DEBUG_NATIVE -DOPTIMIZE=NO_OPTIMIZATION",
         "build": "webpack --progress --mode=production ",
         "build:debug": "webpack --progress --mode=development",
         "start": "webpack serve --progress --mode=production --static=./dist",
@@ -23,6 +23,7 @@
         "copy-webpack-plugin": "^11.0.0",
         "css-loader": "^6.7.3",
         "html-webpack-plugin": "^5.5.0",
+        "itk-wasm": "^1.0.0-b.83",
         "postcss-loader": "^7.0.2",
         "style-loader": "^3.3.1",
         "webpack": "^5.75.0",
