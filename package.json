@@ -4,8 +4,9 @@
     "description": "A suite of benchmarks for VTK C++ with WebAssembly.",
     "main": "index.js",
     "scripts": {
-        "build-wasm": "npx itk-wasm -i kitware/vtk-wasm -b build-emscripten -s src build",
-        "build-wasm:debug": "npx itk-wasm -i kitware/vtk-wasm -b build-emscripten -s src build -- -DDEBUGINFO=DEBUG_NATIVE -DOPTIMIZE=NO_OPTIMIZATION",
+        "build-wasm": "npm run build-wasm:release",
+        "build-wasm:release": "npx itk-wasm -i kitware/vtk-wasm -b build-emscripten -s src build -- Release -DDEBUGINFO=PROFILE",
+        "build-wasm:debug": "npx itk-wasm -i kitware/vtk-wasm -b build-emscripten -s src build -- Debug -DDEBUGINFO=DEBUG_NATIVE -DOPTIMIZE=NO_OPTIMIZATION",
         "build": "webpack --progress --mode=production ",
         "build:debug": "webpack --progress --mode=development",
         "start": "webpack serve --progress --mode=production --static=./dist",

@@ -12,7 +12,7 @@ module.exports = {
     filename: "index.js",
     library: {
       type: "umd",
-      name: "vtk-wasm-benchmark-web-app",
+      name: "vtkWasmRenderingApplication",
     },
   },
   module: {
